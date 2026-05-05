@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
+import type { Category, PaginatedResponse, Product, ProductFilters } from './types'
 
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+
+// ── Client-side axios instance (with auth token) ──────────────────────────
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1',
+  baseURL: BASE,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
   withCredentials: true,
 })
@@ -10,22 +14,56 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const session = await getSession()
   const token = (session?.user as { token?: string })?.token
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login'
-      }
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      window.location.href = '/auth/login'
     }
     return Promise.reject(error)
   },
 )
 
 export default api
+
+// ── Server-side fetch helpers (no auth, for RSC / SSG / ISR) ─────────────
+async function serverFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
+  const url = new URL(`${BASE}${path}`)
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== '') url.searchParams.set(k, v)
+    })
+  }
+  const res = await fetch(url.toString(), {
+    headers: { Accept: 'application/json' },
+    next: { revalidate: 60 },
+  })
+  if (!res.ok) throw new Error(`API ${res.status}: ${path}`)
+  return res.json()
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const data = await serverFetch<{ data: Category[] }>('/categories')
+  return data.data
+}
+
+export async function fetchProducts(filters: ProductFilters = {}): Promise<PaginatedResponse<Product>> {
+  const params: Record<string, string> = {}
+  if (filters.q) params.q = filters.q
+  if (filters.category) params.category = filters.category
+  if (filters.min_price !== undefined) params.min_price = String(filters.min_price)
+  if (filters.max_price !== undefined) params.max_price = String(filters.max_price)
+  if (filters.sort) params.sort = filters.sort
+  if (filters.page) params.page = String(filters.page)
+  if (filters.per_page) params.per_page = String(filters.per_page)
+  return serverFetch<PaginatedResponse<Product>>('/products', params)
+}
+
+export async function fetchProduct(slug: string): Promise<Product> {
+  const data = await serverFetch<{ data: Product }>(`/products/${slug}`)
+  return data.data
+}
