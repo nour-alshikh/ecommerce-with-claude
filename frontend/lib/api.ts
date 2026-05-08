@@ -1,6 +1,14 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
-import type { Category, PaginatedResponse, Product, ProductFilters } from './types'
+import type {
+  Address,
+  Category,
+  Order,
+  PaginatedResponse,
+  Product,
+  ProductFilters,
+  ServerCart,
+} from './types'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
 
@@ -66,4 +74,75 @@ export async function fetchProducts(filters: ProductFilters = {}): Promise<Pagin
 export async function fetchProduct(slug: string): Promise<Product> {
   const data = await serverFetch<{ data: Product }>(`/products/${slug}`)
   return data.data
+}
+
+// ── Cart API (client-side) ────────────────────────────────────────────────
+export const cartApi = {
+  get: (sessionId?: string) =>
+    api.get<{ data: ServerCart }>('/cart', {
+      headers: sessionId ? { 'X-Session-Id': sessionId } : {},
+    }),
+
+  addItem: (productId: number, variantId: number | null, quantity: number, sessionId?: string) =>
+    api.post<{ data: ServerCart }>(
+      '/cart/items',
+      { product_id: productId, variant_id: variantId, quantity },
+      { headers: sessionId ? { 'X-Session-Id': sessionId } : {} },
+    ),
+
+  updateItem: (itemId: number, quantity: number, sessionId?: string) =>
+    api.patch<{ data: ServerCart }>(
+      `/cart/items/${itemId}`,
+      { quantity },
+      { headers: sessionId ? { 'X-Session-Id': sessionId } : {} },
+    ),
+
+  removeItem: (itemId: number, sessionId?: string) =>
+    api.delete<{ data: ServerCart }>(`/cart/items/${itemId}`, {
+      headers: sessionId ? { 'X-Session-Id': sessionId } : {},
+    }),
+
+  clear: (sessionId?: string) =>
+    api.delete('/cart', {
+      headers: sessionId ? { 'X-Session-Id': sessionId } : {},
+    }),
+
+  applyCoupon: (code: string, sessionId?: string) =>
+    api.post<{ data: ServerCart }>(
+      '/cart/coupon',
+      { code },
+      { headers: sessionId ? { 'X-Session-Id': sessionId } : {} },
+    ),
+
+  removeCoupon: (sessionId?: string) =>
+    api.delete<{ data: ServerCart }>('/cart/coupon', {
+      headers: sessionId ? { 'X-Session-Id': sessionId } : {},
+    }),
+}
+
+// ── Address API ───────────────────────────────────────────────────────────
+export const addressApi = {
+  list: () => api.get<{ data: Address[] }>('/addresses'),
+  create: (data: Omit<Address, 'id'>) => api.post<{ data: Address }>('/addresses', data),
+  update: (id: number, data: Partial<Omit<Address, 'id'>>) =>
+    api.put<{ data: Address }>(`/addresses/${id}`, data),
+  remove: (id: number) => api.delete(`/addresses/${id}`),
+}
+
+// ── Payment API ───────────────────────────────────────────────────────────
+export const paymentApi = {
+  createIntent: (addressId: number) =>
+    api.post<{ data: { order_id: number; client_secret: string } }>('/payments/intent', {
+      address_id: addressId,
+    }),
+}
+
+// ── Order API ─────────────────────────────────────────────────────────────
+export const orderApi = {
+  list: (page = 1) =>
+    api.get<{ data: Order[]; meta: { current_page: number; last_page: number; total: number } }>(
+      `/orders?page=${page}`,
+    ),
+  get: (id: number) => api.get<{ data: Order }>(`/orders/${id}`),
+  cancel: (id: number) => api.post<{ data: Order }>(`/orders/${id}/cancel`),
 }
