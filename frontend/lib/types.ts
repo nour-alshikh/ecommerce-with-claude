@@ -123,6 +123,15 @@ export interface OrderItem {
   subtotal: number
 }
 
+export interface Review {
+  id: number
+  user_name: string
+  rating: number
+  title: string | null
+  comment: string | null
+  created_at: string
+}
+
 export interface Order {
   id: number
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'

@@ -8,15 +8,18 @@ use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\Admin\AdminReviewController;
 use App\Http\Controllers\Api\Admin\AdminSettingController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\Shop\AddressController;
 use App\Http\Controllers\Api\Shop\CartController;
 use App\Http\Controllers\Api\Shop\CategoryController;
 use App\Http\Controllers\Api\Shop\OrderController;
 use App\Http\Controllers\Api\Shop\PaymentController;
 use App\Http\Controllers\Api\Shop\ProductController;
+use App\Http\Controllers\Api\Shop\ReviewController;
 use App\Http\Controllers\Api\Webhook\StripeWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +35,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/login', LoginController::class);
     Route::post('/auth/register', RegisterController::class);
+    Route::post('/auth/forgot-password', ForgotPasswordController::class);
+    Route::post('/auth/reset-password', ResetPasswordController::class);
 });
 
 // Catalog
@@ -39,6 +44,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/products/{slug}/reviews', [ReviewController::class, 'index']);
 
 // Cart — guest-friendly (resolves by X-Session-Id header or auth token)
 Route::middleware('throttle:api')->group(function () {
@@ -76,6 +82,9 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:api'])->group(functio
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    // Reviews (auth required to submit)
+    Route::post('/products/{slug}/reviews', [ReviewController::class, 'store']);
 
     // ── Admin ─────────────────────────────────────────────────────────────
     Route::middleware('admin')->prefix('admin')->group(function () {

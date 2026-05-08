@@ -1,9 +1,20 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { fetchCategories, fetchProducts } from '@/lib/api'
 import { ProductCard } from '@/components/store/ProductCard'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Shop electronics, clothing, home goods, and more at the best prices.',
+  openGraph: {
+    title: 'Store — Shop the latest',
+    description: 'Electronics, clothing, home goods, and more — all in one place.',
+    type: 'website',
+  },
+}
 
 export default async function HomePage() {
   const [categories, featured] = await Promise.all([

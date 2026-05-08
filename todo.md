@@ -201,34 +201,42 @@
 *Goal: Production-ready, SEO-optimized, fully tested*
 
 ### Features
-- [ ] Product reviews — submit form, display on product detail, star rating UI
-- [ ] Wishlist — add/remove, wishlist page
-- [ ] Order status emails on status change (shipped, delivered)
-- [ ] Password reset flow (forgot password → email → reset form)
+- [x] Product reviews — submit form, display on product detail, star rating UI
+  - [x] `ReviewController` (GET public reviews + POST auth-gated)
+  - [x] `ReviewRequest`, `ReviewResource`
+  - [x] `ReviewSection` component (star rating, review list, submit form)
+  - [x] Verified-purchase check before allowing review submission
+- [-] Wishlist — add/remove, wishlist page (deferred — P2 per PRD)
+- [-] Order status emails on status change (deferred to notifications backlog)
+- [x] Password reset flow (forgot password → email → reset form)
+  - [x] `ForgotPasswordController`, `ResetPasswordController`
+  - [x] `/auth/forgot-password` page, `/auth/reset-password` page
+  - [x] `CanResetPassword` trait added to User model
+  - [x] "Forgot password?" link on login form
 
 ### SEO & Performance
-- [ ] Add `generateMetadata` to all public pages (title, description, OG tags)
-- [ ] Add OG image for products using Next.js `opengraph-image.tsx`
-- [ ] Generate `sitemap.xml` route (`app/sitemap.ts`)
-- [ ] Generate `robots.txt` (`app/robots.ts`)
-- [ ] Add JSON-LD structured data (Product schema) on product detail pages
-- [ ] Verify ISR is working — check cache headers
-- [ ] Add Next.js Image optimization to all product images
+- [x] Add `generateMetadata` to all public pages (homepage, products listing, product detail)
+- [-] OG image for products via `opengraph-image.tsx` (deferred — needs asset pipeline)
+- [x] Generate `sitemap.xml` route (`app/sitemap.ts`)
+- [x] Generate `robots.txt` (`app/robots.ts`)
+- [x] Add JSON-LD structured data (Product schema) on product detail pages
+- [-] Verify ISR cache headers (manual QA step)
+- [x] Next.js Image optimization already applied (`<Image />` used throughout)
 
 ### Accessibility
-- [ ] Keyboard navigation for modals, drawers, dropdowns
-- [ ] ARIA labels on icon-only buttons
-- [ ] Skip-to-content link
-- [ ] Color contrast audit (WCAG AA)
-- [ ] Focus trap in Cart Drawer and modals
+- [-] Keyboard navigation for modals, drawers (deferred — needs focus-trap library)
+- [-] ARIA labels on icon-only buttons (deferred — full audit)
+- [x] Skip-to-content link (added to root layout)
+- [-] Color contrast audit (deferred — design tool review)
+- [-] Focus trap in Cart Drawer (deferred)
 
 ### Error Handling & UX
-- [ ] Global error boundary
+- [x] Global error boundary (`app/error.tsx`, `app/(store)/error.tsx`)
 - [x] 404 page (`not-found.tsx`)
-- [ ] Loading skeletons on product listing and detail
-- [ ] Toast notifications (cart add, order placed, error)
-- [ ] Empty states (no products, no orders, empty cart)
-- [ ] Form validation feedback (inline errors)
+- [x] Loading skeletons on product listing (`app/(store)/products/loading.tsx`)
+- [x] Toast notifications via `sonner` (cart add, review submit, password reset, errors)
+- [x] Empty states (empty cart, empty orders — already in Phase 3/4 pages)
+- [x] Form validation feedback (inline errors on all forms)
 
 ### Testing
 - [ ] Backend: 80%+ test coverage on service layer
@@ -246,8 +254,8 @@
 - [ ] Run `php artisan route:list` — confirm no unintended public routes
 
 ### DevOps Prep
-- [ ] Create `.env.example` for both projects
-- [ ] Write production `.env` values documentation
+- [x] `.env.local.example` for frontend (updated with Stripe key)
+- [x] `.env.example` for backend (already present with Stripe, DB, mail docs)
 - [ ] Configure `FILESYSTEM_DISK=s3` for production
 - [ ] Set up Laravel Horizon config for production queue
 - [ ] Add `php artisan schedule:run` for `AlertLowStock` daily job
@@ -278,4 +286,4 @@
 | Phase 2 — Product Catalog | **Complete** | 100% |
 | Phase 3 — Cart & Checkout | **Complete** | 100% |
 | Phase 4 — Admin Panel | **Complete** | 100% |
-| Phase 5 — Polish & Launch | Not Started | 0% |
+| Phase 5 — Polish & Launch | In Progress | ~55% |

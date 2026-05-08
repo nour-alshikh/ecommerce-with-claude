@@ -7,6 +7,7 @@ import type {
   PaginatedResponse,
   Product,
   ProductFilters,
+  Review,
   ServerCart,
 } from './types'
 
@@ -145,4 +146,22 @@ export const orderApi = {
     ),
   get: (id: number) => api.get<{ data: Order }>(`/orders/${id}`),
   cancel: (id: number) => api.post<{ data: Order }>(`/orders/${id}/cancel`),
+}
+
+// ── Review API ────────────────────────────────────────────────────────────
+export const reviewApi = {
+  list: (slug: string, page = 1) =>
+    api.get<{ data: Review[]; meta: { current_page: number; last_page: number; total: number } }>(
+      `/products/${slug}/reviews?page=${page}`,
+    ),
+  submit: (slug: string, data: { rating: number; title?: string; comment?: string }) =>
+    api.post<{ message: string; data: Review }>(`/products/${slug}/reviews`, data),
+}
+
+// ── Auth extras API ───────────────────────────────────────────────────────
+export const authApi = {
+  forgotPassword: (email: string) =>
+    api.post<{ message: string }>('/auth/forgot-password', { email }),
+  resetPassword: (data: { token: string; email: string; password: string; password_confirmation: string }) =>
+    api.post<{ message: string }>('/auth/reset-password', data),
 }

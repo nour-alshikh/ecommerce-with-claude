@@ -3,7 +3,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { useCartStore } from '@/store/cartStore'
+import { ReviewSection } from '@/components/store/ReviewSection'
 import type { Product, ProductVariant } from '@/lib/types'
 
 function formatPrice(n: number) {
@@ -32,11 +34,13 @@ export function ProductDetail({ product }: { product: Product }) {
   const handleAddToCart = () => {
     addItem(product, selectedVariant?.id ?? null, selectedVariant?.name ?? null)
     setAdded(true)
+    toast.success(`${product.name} added to cart`)
     setTimeout(() => setAdded(false), 2000)
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
+    <div>
+      <div className="grid gap-10 lg:grid-cols-2">
       {/* Image gallery */}
       <div className="space-y-3">
         <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-50">
@@ -170,6 +174,9 @@ export function ProductDetail({ product }: { product: Product }) {
           <p className="text-sm leading-relaxed text-gray-600">{product.description}</p>
         </div>
       </div>
+      </div>
+
+      <ReviewSection productSlug={product.slug} />
     </div>
   )
 }
