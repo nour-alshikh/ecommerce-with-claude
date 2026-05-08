@@ -19,8 +19,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         <nav className="flex flex-col gap-1 p-4 flex-1">
           <NavLink href="/admin" exact>Dashboard</NavLink>
+          <NavLink href="/admin/orders">Orders</NavLink>
           <NavLink href="/admin/products">Products</NavLink>
           <NavLink href="/admin/categories">Categories</NavLink>
+          <NavLink href="/admin/customers">Customers</NavLink>
+          <NavLink href="/admin/coupons">Coupons</NavLink>
+          <NavLink href="/admin/reviews">Reviews</NavLink>
+          <NavLink href="/admin/settings">Settings</NavLink>
         </nav>
         <div className="border-t border-gray-200 p-4">
           <Link href="/" className="block rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-gray-50">
@@ -33,10 +38,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 lg:hidden">
           <Link href="/" className="text-lg font-bold text-gray-900">Store Admin</Link>
-          <nav className="flex gap-3 text-sm">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
-            <Link href="/admin/products" className="text-gray-600 hover:text-gray-900">Products</Link>
-            <Link href="/admin/categories" className="text-gray-600 hover:text-gray-900">Categories</Link>
+          <nav className="flex gap-3 text-sm overflow-x-auto">
+            <Link href="/admin" className="shrink-0 text-gray-600 hover:text-gray-900">Dashboard</Link>
+            <Link href="/admin/orders" className="shrink-0 text-gray-600 hover:text-gray-900">Orders</Link>
+            <Link href="/admin/products" className="shrink-0 text-gray-600 hover:text-gray-900">Products</Link>
+            <Link href="/admin/customers" className="shrink-0 text-gray-600 hover:text-gray-900">Customers</Link>
+            <Link href="/admin/coupons" className="shrink-0 text-gray-600 hover:text-gray-900">Coupons</Link>
+            <Link href="/admin/reviews" className="shrink-0 text-gray-600 hover:text-gray-900">Reviews</Link>
+            <Link href="/admin/settings" className="shrink-0 text-gray-600 hover:text-gray-900">Settings</Link>
           </nav>
         </header>
         <main className="flex-1 p-6">{children}</main>
