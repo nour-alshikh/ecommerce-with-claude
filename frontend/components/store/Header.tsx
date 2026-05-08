@@ -102,6 +102,14 @@ export function Header() {
                     >
                       Orders
                     </Link>
+                    <Link
+                      href="/wishlist"
+                      role="menuitem"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Wishlist
+                    </Link>
                     <hr className="my-1 border-gray-100" role="separator" />
                     <button
                       role="menuitem"

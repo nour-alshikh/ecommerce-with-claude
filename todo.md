@@ -206,8 +206,16 @@
   - [x] `ReviewRequest`, `ReviewResource`
   - [x] `ReviewSection` component (star rating, review list, submit form)
   - [x] Verified-purchase check before allowing review submission
-- [-] Wishlist — add/remove, wishlist page (deferred — P2 per PRD)
-- [-] Order status emails on status change (deferred to notifications backlog)
+- [x] Wishlist — add/remove, wishlist page
+  - [x] `wishlist_items` migration + `WishlistItem` model
+  - [x] `WishlistController` (GET list, GET ids, POST add, DELETE remove)
+  - [x] `WishlistButton` component on product detail (heart icon, toggles)
+  - [x] `/wishlist` page with empty state
+  - [x] Wishlist link in Header user menu
+- [x] Order status emails on status change
+  - [x] `SendOrderStatusEmail` job + `OrderStatusMail` mailable
+  - [x] `emails/order-status.blade.php` template (shipped/delivered variants)
+  - [x] Dispatched in `AdminOrderController::updateStatus()` on shipped/delivered
 - [x] Password reset flow (forgot password → email → reset form)
   - [x] `ForgotPasswordController`, `ResetPasswordController`
   - [x] `/auth/forgot-password` page, `/auth/reset-password` page
@@ -216,7 +224,7 @@
 
 ### SEO & Performance
 - [x] Add `generateMetadata` to all public pages (homepage, products listing, product detail)
-- [-] OG image for products via `opengraph-image.tsx` (deferred — needs asset pipeline)
+- [x] OG image for products via `opengraph-image.tsx` (dynamic, edge runtime, indigo gradient)
 - [x] Generate `sitemap.xml` route (`app/sitemap.ts`)
 - [x] Generate `robots.txt` (`app/robots.ts`)
 - [x] Add JSON-LD structured data (Product schema) on product detail pages
@@ -244,9 +252,9 @@
 - [x] Backend: `CartTest` — guest cart, add/update/remove, stock checks, clear (10 cases)
 - [x] Backend: `AdminRoutesTest` — all admin routes return 401 unauth, 403 to customers, 200 to admin
 - [x] Backend: `ProductFactory`, `CategoryFactory`, `ProductVariantFactory` created
-- [-] Frontend: unit tests for CartStore (deferred — requires Jest setup)
-- [-] E2E (Playwright): deferred to post-launch QA
-- [-] Test with Stripe test cards: manual QA step
+- [x] Frontend: Jest configured (`jest.config.ts`, `jest.setup.ts`); 11 CartStore unit tests
+- [x] E2E: Playwright configured (`playwright.config.ts`); 10 tests covering nav, cart drawer, auth pages, 404
+- [-] Test with Stripe test cards: requires running server with live Stripe keys (manual QA)
 
 ### Security Audit
 - [x] Admin routes guarded by `admin` middleware — verified 403 in AdminRoutesTest
@@ -259,8 +267,8 @@
 ### DevOps Prep
 - [x] `.env.local.example` for frontend (with Stripe publishable key)
 - [x] `.env.example` for backend (Stripe, DB, mail, Sanctum docs)
-- [-] `FILESYSTEM_DISK=s3` config — set env var + configure `config/filesystems.php` in production
-- [-] Laravel Horizon — install via `composer require laravel/horizon` when deploying with Redis
+- [-] `FILESYSTEM_DISK=s3` — set `FILESYSTEM_DISK=s3` in production `.env`; `config/filesystems.php` already has the `s3` disk configured by default in Laravel
+- [-] Laravel Horizon — `composer require laravel/horizon && php artisan horizon:install` when deploying with Redis; config auto-generated
 - [-] MySQL production user — server-side config (not code)
 - [x] CORS already locked to `FRONTEND_URL` env var (production value = production domain)
 

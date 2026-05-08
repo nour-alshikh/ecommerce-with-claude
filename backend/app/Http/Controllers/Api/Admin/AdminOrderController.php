@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
+use App\Jobs\SendOrderStatusEmail;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
@@ -87,6 +88,11 @@ class AdminOrderController extends Controller
         }
 
         $order->update(['status' => $request->status]);
+
+        if (in_array($request->status, ['shipped', 'delivered'])) {
+            SendOrderStatusEmail::dispatch($order, $request->status)->onQueue('default');
+        }
+
         return response()->json(['data' => new OrderResource($order)]);
     }
 

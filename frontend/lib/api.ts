@@ -9,6 +9,7 @@ import type {
   ProductFilters,
   Review,
   ServerCart,
+  WishlistItem,
 } from './types'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
@@ -156,6 +157,14 @@ export const reviewApi = {
     ),
   submit: (slug: string, data: { rating: number; title?: string; comment?: string }) =>
     api.post<{ message: string; data: Review }>(`/products/${slug}/reviews`, data),
+}
+
+// ── Wishlist API ──────────────────────────────────────────────────────────
+export const wishlistApi = {
+  list: () => api.get<{ data: WishlistItem[] }>('/wishlist'),
+  ids: () => api.get<{ data: number[] }>('/wishlist/ids'),
+  add: (productId: number) => api.post<{ message: string }>('/wishlist', { product_id: productId }),
+  remove: (productId: number) => api.delete(`/wishlist/${productId}`),
 }
 
 // ── Auth extras API ───────────────────────────────────────────────────────

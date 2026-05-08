@@ -123,6 +123,13 @@ export interface OrderItem {
   subtotal: number
 }
 
+export interface WishlistItem {
+  id: number
+  product_id: number
+  product: Product
+  created_at: string
+}
+
 export interface Review {
   id: number
   user_name: string

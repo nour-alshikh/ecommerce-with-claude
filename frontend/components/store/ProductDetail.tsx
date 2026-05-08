@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useCartStore } from '@/store/cartStore'
 import { ReviewSection } from '@/components/store/ReviewSection'
+import { WishlistButton } from '@/components/store/WishlistButton'
 import type { Product, ProductVariant } from '@/lib/types'
 
 function formatPrice(n: number) {
@@ -93,9 +94,12 @@ export function ProductDetail({ product }: { product: Product }) {
           <span className="text-gray-600 line-clamp-1">{product.name}</span>
         </nav>
 
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{product.name}</h1>
-          <p className="mt-1 text-sm text-gray-400">SKU: {product.sku}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{product.name}</h1>
+            <p className="mt-1 text-sm text-gray-400">SKU: {product.sku}</p>
+          </div>
+          <WishlistButton productId={product.id} />
         </div>
 
         {/* Price */}

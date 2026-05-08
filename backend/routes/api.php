@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Shop\OrderController;
 use App\Http\Controllers\Api\Shop\PaymentController;
 use App\Http\Controllers\Api\Shop\ProductController;
 use App\Http\Controllers\Api\Shop\ReviewController;
+use App\Http\Controllers\Api\Shop\WishlistController;
 use App\Http\Controllers\Api\Webhook\StripeWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +86,12 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:api'])->group(functio
 
     // Reviews (auth required to submit)
     Route::post('/products/{slug}/reviews', [ReviewController::class, 'store']);
+
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::get('/wishlist/ids', [WishlistController::class, 'ids']);
+    Route::post('/wishlist', [WishlistController::class, 'store']);
+    Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy']);
 
     // ── Admin ─────────────────────────────────────────────────────────────
     Route::middleware('admin')->prefix('admin')->group(function () {
