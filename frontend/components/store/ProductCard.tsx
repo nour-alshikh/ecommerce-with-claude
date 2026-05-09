@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Product } from '@/lib/types'
+import { AddToCartButton } from './AddToCartButton'
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -12,12 +13,9 @@ export function ProductCard({ product }: { product: Product }) {
   const isOutOfStock = product.stock === 0 && (!product.variants || product.variants.length === 0)
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-md"
-    >
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-md">
       {/* Image */}
-      <div className="relative aspect-square bg-gray-50">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square bg-gray-50">
         {primary ? (
           <Image
             src={primary.url}
@@ -44,27 +42,33 @@ export function ProductCard({ product }: { product: Product }) {
             Out of stock
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Details */}
       <div className="flex flex-1 flex-col gap-1 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">
-          {product.category?.name}
-        </p>
-        <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
-          {product.name}
-        </h3>
-        <div className="mt-auto flex items-center gap-2 pt-2">
-          <span className="text-base font-bold text-gray-900">
-            {formatPrice(product.effective_price)}
-          </span>
-          {isOnSale && (
-            <span className="text-sm text-gray-400 line-through">
-              {formatPrice(product.price)}
+        <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-1">
+          <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">
+            {product.category?.name}
+          </p>
+          <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
+            {product.name}
+          </h3>
+          <div className="mt-auto flex items-center gap-2 pt-2">
+            <span className="text-base font-bold text-gray-900">
+              {formatPrice(product.effective_price)}
             </span>
-          )}
+            {isOnSale && (
+              <span className="text-sm text-gray-400 line-through">
+                {formatPrice(product.price)}
+              </span>
+            )}
+          </div>
+        </Link>
+
+        <div className="mt-3">
+          <AddToCartButton product={product} />
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

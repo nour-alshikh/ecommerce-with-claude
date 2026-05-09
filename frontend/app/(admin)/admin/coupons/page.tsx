@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -33,6 +34,7 @@ const EMPTY_FORM = {
 
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 })
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Coupon | null>(null)
@@ -40,11 +42,12 @@ export default function AdminCouponsPage() {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
 
-  const load = async () => {
+  const load = async (page = 1) => {
     setLoading(true)
     try {
-      const { data } = await api.get('/admin/coupons')
+      const { data } = await api.get('/admin/coupons', { params: { page } })
       setCoupons(data.data)
+      setMeta(data.meta)
     } finally {
       setLoading(false)
     }
@@ -301,6 +304,14 @@ export default function AdminCouponsPage() {
           </table>
         )}
       </div>
+
+      <AdminPagination
+        currentPage={meta.current_page}
+        lastPage={meta.last_page}
+        total={meta.total}
+        itemLabel="coupons"
+        onPageChange={load}
+      />
     </div>
   )
 }

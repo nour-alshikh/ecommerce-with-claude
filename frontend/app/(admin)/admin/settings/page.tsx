@@ -8,6 +8,7 @@ interface Settings {
   store_email: string
   currency: string
   tax_rate: string
+  low_stock_threshold: string
   free_shipping_threshold: string
   maintenance_mode: string
 }
@@ -78,7 +79,7 @@ export default function AdminSettingsPage() {
         {/* Commerce */}
         <div className="rounded-2xl border border-gray-100 bg-white p-6">
           <h2 className="mb-4 font-semibold text-gray-900">Commerce</h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-500">Currency</label>
               <select
@@ -112,6 +113,17 @@ export default function AdminSettingsPage() {
                 step="0.01"
                 value={settings?.free_shipping_threshold ?? ''}
                 onChange={(e) => setSettings((s) => s ? { ...s, free_shipping_threshold: e.target.value } : s)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-500">Low Stock Threshold (units)</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={settings?.low_stock_threshold ?? ''}
+                onChange={(e) => setSettings((s) => s ? { ...s, low_stock_threshold: e.target.value } : s)}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
               />
             </div>

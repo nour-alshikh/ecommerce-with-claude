@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { useCartStore } from '@/store/cartStore'
+import { useCart } from '@/lib/hooks/useCart'
 import { ReviewSection } from '@/components/store/ReviewSection'
 import { WishlistButton } from '@/components/store/WishlistButton'
 import type { Product, ProductVariant } from '@/lib/types'
@@ -14,7 +14,7 @@ function formatPrice(n: number) {
 }
 
 export function ProductDetail({ product }: { product: Product }) {
-  const addItem = useCartStore((s) => s.addItem)
+  const { addItem } = useCart()
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants?.[0] ?? null,
   )
@@ -33,10 +33,22 @@ export function ProductDetail({ product }: { product: Product }) {
     : product.stock === 0
 
   const handleAddToCart = () => {
-    addItem(product, selectedVariant?.id ?? null, selectedVariant?.name ?? null)
-    setAdded(true)
-    toast.success(`${product.name} added to cart`)
-    setTimeout(() => setAdded(false), 2000)
+    addItem.mutate(
+      { productId: product.id, variantId: selectedVariant?.id ?? null, quantity: 1 },
+      {
+        onSuccess: () => {
+          setAdded(true)
+          toast.success(`${product.name} added to cart`)
+          setTimeout(() => setAdded(false), 2000)
+        },
+        onError: (error: unknown) => {
+          const msg =
+            (error as { response?: { data?: { errors?: { quantity?: string[] } } } })
+              ?.response?.data?.errors?.quantity?.[0] ?? 'Failed to add to cart'
+          toast.error(msg)
+        },
+      },
+    )
   }
 
   return (

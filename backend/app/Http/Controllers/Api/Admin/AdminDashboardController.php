@@ -63,7 +63,7 @@ class AdminDashboardController extends Controller
     {
         $rows = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereNotIn('orders.status', ['cancelled', 'refunded'])
-            ->selectRaw('product_id, product_name, SUM(quantity) as total_sold, SUM(subtotal) as total_revenue')
+            ->selectRaw('product_id, product_name, SUM(quantity) as total_sold, SUM(order_items.subtotal) as total_revenue')
             ->groupBy('product_id', 'product_name')
             ->orderByDesc('total_sold')
             ->limit(5)

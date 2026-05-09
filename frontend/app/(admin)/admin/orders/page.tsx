@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -114,22 +115,13 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
-      {meta.last_page > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-          <span>{meta.total} orders</span>
-          <div className="flex gap-2">
-            {Array.from({ length: meta.last_page }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => load(p)}
-                className={`rounded px-3 py-1 ${p === meta.current_page ? 'bg-gray-900 text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <AdminPagination
+        currentPage={meta.current_page}
+        lastPage={meta.last_page}
+        total={meta.total}
+        itemLabel="orders"
+        onPageChange={load}
+      />
     </div>
   )
 }
