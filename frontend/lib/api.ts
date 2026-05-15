@@ -133,10 +133,12 @@ export const addressApi = {
 
 // ── Payment API ───────────────────────────────────────────────────────────
 export const paymentApi = {
-  createIntent: (addressId: number) =>
-    api.post<{ data: { order_id: number; client_secret: string } }>('/payments/intent', {
-      address_id: addressId,
-    }),
+  initiatePayment: (addressId: number, sessionId?: string) =>
+    api.post<{ data: { order_id: number; iframe_url: string } }>(
+      '/payments/initiate',
+      { address_id: addressId },
+      { headers: sessionId ? { 'X-Session-Id': sessionId } : {} },
+    ),
 }
 
 // ── Order API ─────────────────────────────────────────────────────────────

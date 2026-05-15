@@ -37,7 +37,7 @@ function formatPrice(n: number) {
 
 interface OrderPageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ payment_intent?: string }>
+  searchParams: Promise<{ paid?: string }>
 }
 
 export default async function OrderDetailPage({ params, searchParams }: OrderPageProps) {
@@ -45,14 +45,14 @@ export default async function OrderDetailPage({ params, searchParams }: OrderPag
   if (!session) redirect('/auth/login')
 
   const { id } = await params
-  const { payment_intent } = await searchParams
+  const { paid } = await searchParams
   const token = (session.user as { token?: string })?.token ?? ''
 
   const result = await getOrder(token, id)
   if (!result) notFound()
 
   const order = result.data
-  const justPaid = !!payment_intent
+  const justPaid = paid === 'true'
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">

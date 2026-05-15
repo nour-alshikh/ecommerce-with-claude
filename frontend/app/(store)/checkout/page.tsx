@@ -1,20 +1,10 @@
 'use client'
 
-import { loadStripe } from '@stripe/stripe-js'
-import {
-  Elements,
-  PaymentElement,
-  useElements,
-  useStripe,
-} from '@stripe/react-stripe-js'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { addressApi, paymentApi } from '@/lib/api'
 import { useCart } from '@/lib/hooks/useCart'
 import type { Address } from '@/lib/types'
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY ?? '')
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -22,11 +12,7 @@ function formatPrice(n: number) {
 
 // ── Step 1: Address selection ─────────────────────────────────────────────
 
-function AddressStep({
-  onNext,
-}: {
-  onNext: (addressId: number) => void
-}) {
+function AddressStep({ onNext }: { onNext: (addressId: number) => void }) {
   const { data, isLoading } = useQuery({
     queryKey: ['addresses'],
     queryFn: () => addressApi.list().then((r) => r.data.data as Address[]),
@@ -151,15 +137,13 @@ function AddressStep({
   )
 }
 
-// ── Step 2: Order Review ──────────────────────────────────────────────────
+// ── Step 2: Order Review + Payment redirect ───────────────────────────────
 
 function ReviewStep({
   addressId,
-  onNext,
   onBack,
 }: {
   addressId: number
-  onNext: (clientSecret: string, orderId: number) => void
   onBack: () => void
 }) {
   const { cart } = useCart()
@@ -170,9 +154,14 @@ function ReviewStep({
 
   const address = addresses?.find((a) => a.id === addressId)
 
-  const createIntent = useMutation({
-    mutationFn: () => paymentApi.createIntent(addressId).then((r) => r.data.data),
-    onSuccess: (data) => onNext(data.client_secret, data.order_id),
+  const initiatePayment = useMutation({
+    mutationFn: () => {
+      const sessionId = localStorage.getItem('cart_session_id') ?? undefined
+      return paymentApi.initiatePayment(addressId, sessionId).then((r) => r.data.data)
+    },
+    onSuccess: (data) => {
+      window.location.href = data.iframe_url
+    },
   })
 
   return (
@@ -222,95 +211,37 @@ function ReviewStep({
         </div>
       )}
 
-      {createIntent.isError && (
+      {initiatePayment.isError && (
         <p className="mt-3 text-sm text-red-600">Something went wrong. Please try again.</p>
       )}
 
       <div className="mt-6 flex gap-3">
-        <button onClick={onBack} className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        <button
+          onClick={onBack}
+          disabled={initiatePayment.isPending}
+          className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+        >
           Back
         </button>
         <button
-          onClick={() => createIntent.mutate()}
-          disabled={createIntent.isPending}
+          onClick={() => initiatePayment.mutate()}
+          disabled={initiatePayment.isPending}
           className="flex-1 rounded-full bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-40"
         >
-          {createIntent.isPending ? 'Preparing…' : 'Continue to Payment'}
+          {initiatePayment.isPending ? 'Redirecting…' : 'Proceed to Payment'}
         </button>
       </div>
     </div>
   )
 }
 
-// ── Step 3: Payment form (Stripe Elements) ────────────────────────────────
-
-function PaymentForm({ orderId, onBack }: { orderId: number; onBack: () => void }) {
-  const stripe = useStripe()
-  const elements = useElements()
-  const router = useRouter()
-  const [error, setError] = useState('')
-  const [processing, setProcessing] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!stripe || !elements) return
-
-    setProcessing(true)
-    setError('')
-
-    const { error: stripeError } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/orders/${orderId}`,
-      },
-    })
-
-    if (stripeError) {
-      setError(stripeError.message ?? 'Payment failed. Please try again.')
-      setProcessing(false)
-    }
-    // On success, Stripe redirects to return_url
-  }
-
-  return (
-    <div>
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Payment</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="rounded-xl border border-gray-200 p-5">
-          <PaymentElement />
-        </div>
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        <div className="mt-6 flex gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            disabled={processing}
-            className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            disabled={!stripe || processing}
-            className="flex-1 rounded-full bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-40"
-          >
-            {processing ? 'Processing…' : 'Pay now'}
-          </button>
-        </div>
-      </form>
-    </div>
-  )
-}
-
 // ── Checkout page orchestrator ────────────────────────────────────────────
 
-const STEPS = ['Address', 'Review', 'Payment']
+const STEPS = ['Address', 'Review']
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(0)
   const [addressId, setAddressId] = useState<number | null>(null)
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [orderId, setOrderId] = useState<number | null>(null)
 
   return (
     <div className="mx-auto max-w-lg px-4 py-10 sm:px-6">
@@ -339,21 +270,7 @@ export default function CheckoutPage() {
         <ReviewStep
           addressId={addressId}
           onBack={() => setStep(0)}
-          onNext={(secret, id) => {
-            setClientSecret(secret)
-            setOrderId(id)
-            setStep(2)
-          }}
         />
-      )}
-
-      {step === 2 && clientSecret && orderId && (
-        <Elements
-          stripe={stripePromise}
-          options={{ clientSecret, appearance: { theme: 'stripe' } }}
-        >
-          <PaymentForm orderId={orderId} onBack={() => setStep(1)} />
-        </Elements>
       )}
     </div>
   )

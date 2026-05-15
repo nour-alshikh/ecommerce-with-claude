@@ -21,7 +21,7 @@ use App\Http\Controllers\Api\Shop\PaymentController;
 use App\Http\Controllers\Api\Shop\ProductController;
 use App\Http\Controllers\Api\Shop\ReviewController;
 use App\Http\Controllers\Api\Shop\WishlistController;
-use App\Http\Controllers\Api\Webhook\StripeWebhookController;
+use App\Http\Controllers\Api\Webhook\PaymobWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,8 +58,8 @@ Route::middleware('throttle:api')->group(function () {
     Route::delete('/cart/coupon', [CartController::class, 'removeCoupon']);
 });
 
-// Stripe webhook — no auth, verified by signature
-Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
+// Paymob webhook — no auth, verified by HMAC-SHA512
+Route::post('/webhooks/paymob', [PaymobWebhookController::class, 'handle']);
 
 // ── Authenticated ─────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:api'])->group(function () {
@@ -76,8 +76,8 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:api'])->group(functio
     Route::put('/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('/addresses/{id}', [AddressController::class, 'destroy']);
 
-    // Checkout — creates order + Stripe PaymentIntent
-    Route::post('/payments/intent', [PaymentController::class, 'createIntent']);
+    // Checkout — creates order + Paymob payment
+    Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment']);
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
